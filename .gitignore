@@ -10,3 +10,4 @@ Cargo.lock
 
 # Remove backup files
 *~
+.DS_Store
