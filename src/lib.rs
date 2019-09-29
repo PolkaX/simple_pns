@@ -50,6 +50,7 @@ contract! {
             if self.is_name_exist_impl(name) {
                 return false
             }
+            env.println(&format!("register name: {:?}, owner: {:?}", name, caller));
             self.name_to_owner.insert(name, caller);
             env.emit(Register {
                 name: name,
@@ -97,7 +98,7 @@ contract! {
         /// Get address for the specific name 
         pub(external) fn get_address(&self, name: Hash) -> AccountId {
             let address: AccountId = self.get_address_or_none(name);
-            env.println(&format!("get_address is {:?}", address));
+            env.println(&format!("get_address name is {:?}, address is {:?}", name, address));
             address
         }
 
