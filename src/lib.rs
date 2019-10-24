@@ -14,6 +14,13 @@ contract! {
         from: AccountId,
     }
 
+    event RegisterAbi {
+        from: AccountId,
+        name: Hash,
+        code_hash: Hash,
+        abi: String
+    }
+
     event SetAddress {
         name: Hash,
         from: AccountId,
@@ -33,6 +40,8 @@ contract! {
         name_to_address: storage::HashMap<Hash, AccountId>,
         /// A hashmap to store all name to owners mapping
         name_to_owner: storage::HashMap<Hash, AccountId>,
+        name_to_abi: storage::HashMap<Hash, String>,
+        code_hash_to_abi: storage::HashMap<Hash, String>,
         default_address: storage::Value<AccountId>,
     }
 
@@ -57,6 +66,34 @@ contract! {
                 from: caller,
             });
             true
+        }
+
+        /// Register abi with name and code_hash
+        pub(external) fn register_abi(&mut self, name: Hash, code_hash: Hash, abi: String) -> bool {
+            let caller = env.caller();
+            if self.is_name_exist_impl(name) {
+                return false
+            }
+            env.println(&format!("register_abi name: {:?}, owner: {:?}", name, caller));
+            self.name_to_abi.insert(name, abi.clone());
+            self.code_hash_to_abi.insert(code_hash, abi.clone());
+            env.emit(RegisterAbi {
+                from: caller,
+                name: name,
+                code_hash: code_hash,
+                abi: abi
+            });
+            true
+        }
+
+        /// Query abi by name
+        pub(external) fn query_abi_by_name(&self, name: Hash) -> String {
+            self.name_to_abi.get(&name).unwrap_or(&"".to_string()).to_string()
+        }
+
+        /// Query abi by code_hash
+        pub(external) fn query_abi_by_code_hash(&self, code_hash: Hash) -> String {
+            self.code_hash_to_abi.get(&code_hash).unwrap_or(&"".to_string()).to_string()
         }
 
         /// Set address for specific name
