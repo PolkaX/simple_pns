@@ -42,6 +42,7 @@ contract! {
         name_to_owner: storage::HashMap<Hash, AccountId>,
         name_to_abi: storage::HashMap<Hash, String>,
         code_hash_to_abi: storage::HashMap<Hash, String>,
+        account_to_code_hash_list: storage::HashMap<AccountId, Vec<Hash>>,
         default_address: storage::Value<AccountId>,
     }
 
@@ -77,6 +78,16 @@ contract! {
             env.println(&format!("register_abi name: {:?}, owner: {:?}", name, caller));
             self.name_to_abi.insert(name, abi.clone());
             self.code_hash_to_abi.insert(code_hash, abi.clone());
+            match self.account_to_code_hash_list.get_mut(&caller) {
+                None => {
+                    let mut new_vec = Vec::new();
+                    new_vec.push(code_hash);
+                    self.account_to_code_hash_list.insert(env.caller(), new_vec);
+                },
+                Some(a) => {
+                    a.push(code_hash);
+                }
+            }
             env.emit(RegisterAbi {
                 from: caller,
                 name: name,
@@ -87,13 +98,18 @@ contract! {
         }
 
         /// Query abi by name
-        pub(external) fn query_abi_by_name(&self, name: Hash) -> String {
+        pub(external) fn get_abi_by_name(&self, name: Hash) -> String {
             self.name_to_abi.get(&name).unwrap_or(&"".to_string()).to_string()
         }
 
         /// Query abi by code_hash
-        pub(external) fn query_abi_by_code_hash(&self, code_hash: Hash) -> String {
+        pub(external) fn get_abi_by_code_hash(&self, code_hash: Hash) -> String {
             self.code_hash_to_abi.get(&code_hash).unwrap_or(&"".to_string()).to_string()
+        }
+
+        /// Query code_hash list by account
+        pub(external) fn get_code_hash_list_by_account(&self, account: AccountId) -> Vec<Hash> {
+            self.account_to_code_hash_list.get(&account).unwrap_or(&Vec::new()).to_vec()
         }
 
         /// Set address for specific name
