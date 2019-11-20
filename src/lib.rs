@@ -3,8 +3,11 @@
 use ink_core::{
     memory::format,
     storage,
+    memory::vec::Vec,
 };
 use ink_lang::contract;
+
+pub type Text = Vec<u8>;
 
 contract! {
     #![env = ink_core::env::DefaultSrmlTypes]
@@ -18,7 +21,7 @@ contract! {
         from: AccountId,
         name: Hash,
         code_hash: Hash,
-        abi: String
+        abi: Text
     }
 
     event SetAddress {
@@ -40,8 +43,8 @@ contract! {
         name_to_address: storage::HashMap<Hash, AccountId>,
         /// A hashmap to store all name to owners mapping
         name_to_owner: storage::HashMap<Hash, AccountId>,
-        name_to_abi: storage::HashMap<Hash, String>,
-        code_hash_to_abi: storage::HashMap<Hash, String>,
+        name_to_abi: storage::HashMap<Hash, Text>,
+        code_hash_to_abi: storage::HashMap<Hash, Text>,
         account_to_code_hash_list: storage::HashMap<AccountId, Vec<Hash>>,
         default_address: storage::Value<AccountId>,
     }
@@ -70,7 +73,7 @@ contract! {
         }
 
         /// Register abi with name and code_hash
-        pub(external) fn register_abi(&mut self, name: Hash, code_hash: Hash, abi: String) -> bool {
+        pub(external) fn register_abi(&mut self, name: Hash, code_hash: Hash, abi: Text) -> bool {
             let caller = env.caller();
             if self.is_name_exist_impl(name) {
                 return false
@@ -98,13 +101,13 @@ contract! {
         }
 
         /// Query abi by name
-        pub(external) fn get_abi_by_name(&self, name: Hash) -> String {
-            self.name_to_abi.get(&name).unwrap_or(&"".to_string()).to_string()
+        pub(external) fn get_abi_by_name(&self, name: Hash) -> Text {
+            self.name_to_abi.get(&name).unwrap_or(&Vec::new()).to_vec()
         }
 
         /// Query abi by code_hash
-        pub(external) fn get_abi_by_code_hash(&self, code_hash: Hash) -> String {
-            self.code_hash_to_abi.get(&code_hash).unwrap_or(&"".to_string()).to_string()
+        pub(external) fn get_abi_by_code_hash(&self, code_hash: Hash) -> Text {
+            self.code_hash_to_abi.get(&code_hash).unwrap_or(&Vec::new()).to_vec()
         }
 
         /// Query code_hash list by account
