@@ -1,7 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use ink_core::{
-    memory::format,
     storage,
     memory::vec::Vec,
 };
@@ -63,7 +62,7 @@ contract! {
             if self.is_name_exist_impl(name) {
                 return false
             }
-            env.println(&format!("register name: {:?}, owner: {:?}", name, caller));
+            // env.println(&format!("register name: {:?}, owner: {:?}", name, caller));
             self.name_to_owner.insert(name, caller);
             env.emit(Register {
                 name: name,
@@ -78,7 +77,7 @@ contract! {
             if self.is_name_exist_impl(name) {
                 return false
             }
-            env.println(&format!("register_abi name: {:?}, owner: {:?}", name, caller));
+            // env.println(&format!("register_abi name: {:?}, owner: {:?}", name, caller));
             self.name_to_abi.insert(name, abi.clone());
             self.code_hash_to_abi.insert(code_hash, abi.clone());
             match self.account_to_code_hash_list.get_mut(&caller) {
@@ -119,7 +118,7 @@ contract! {
         pub(external) fn set_address(&mut self, name: Hash, address: AccountId) -> bool {
             let caller: AccountId = env.caller();
             let owner: AccountId = self.get_owner_or_none(name);
-            env.println(&format!("set_address caller: {:?}, owner: {:?}", caller, owner));
+            // env.println(&format!("set_address caller: {:?}, owner: {:?}", caller, owner));
             if caller != owner {
                 return false
             }
@@ -137,7 +136,7 @@ contract! {
         pub(external) fn transfer(&mut self, name: Hash, to: AccountId) -> bool {
             let caller: AccountId = env.caller();
             let owner: AccountId = self.get_owner_or_none(name);
-            env.println(&format!("transfer caller: {:?}, owner: {:?}", caller, owner));
+            // env.println(&format!("transfer caller: {:?}, owner: {:?}", caller, owner));
             if caller != owner {
                 return false
             }
@@ -154,7 +153,7 @@ contract! {
         /// Get address for the specific name 
         pub(external) fn get_address(&self, name: Hash) -> AccountId {
             let address: AccountId = self.get_address_or_none(name);
-            env.println(&format!("get_address name is {:?}, address is {:?}", name, address));
+            // env.println(&format!("get_address name is {:?}, address is {:?}", name, address));
             address
         }
 
