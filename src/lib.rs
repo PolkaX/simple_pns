@@ -57,13 +57,14 @@ contract! {
 
     impl SimplePns {
         /// Register specific name with caller as owner
-        pub(external) fn register(&mut self, name: Hash) -> bool {
+        pub(external) fn register(&mut self, name: Hash, address: AccountId) -> bool {
             let caller = env.caller();
             if self.is_name_exist_impl(name) {
                 return false
             }
             // env.println(&format!("register name: {:?}, owner: {:?}", name, caller));
             self.name_to_owner.insert(name, caller);
+            self.name_to_address.insert(name, address);
             env.emit(Register {
                 name: name,
                 from: caller,
@@ -204,8 +205,8 @@ mod tests {
         let mut contract = SimplePns::deploy_mock();
         env::test::set_caller::<Types>(alice);
 
-        assert_eq!(contract.register(name), true);
-        assert_eq!(contract.register(name), false);
+        assert_eq!(contract.register(name, alice), true);
+        assert_eq!(contract.register(name, alice), false);
     }
     
     #[test]
@@ -217,7 +218,7 @@ mod tests {
         let mut contract = SimplePns::deploy_mock();
         env::test::set_caller::<Types>(alice);
 
-        assert_eq!(contract.register(name), true);
+        assert_eq!(contract.register(name, alice), true);
 
         // caller is not owner, set_address will be failed
         env::test::set_caller::<Types>(bob);
@@ -239,7 +240,7 @@ mod tests {
         let mut contract = SimplePns::deploy_mock();
         env::test::set_caller::<Types>(alice);
 
-        assert_eq!(contract.register(name), true);
+        assert_eq!(contract.register(name, alice), true);
 
         // transfer owner
         assert_eq!(contract.transfer(name, bob), true);
